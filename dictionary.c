@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <ctype.h>
 #include <string.h>
 #include "dictionary.h"
 
-void separateWords(signed char text[], signed char dictionary[][WORD_MAX_SIZE], int_fast16_t* n)
+void separateWords(char text[], char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE* n)
 {
-    int_fast16_t i = 0;
-    int_fast16_t m = 0;
+    COUNTER_TYPE i = 0;
+    COUNTER_TYPE m = 0;
 
     while(text[i] != '\0' && *n < WORD_MAX_COUNT)
     {
@@ -33,15 +34,15 @@ void separateWords(signed char text[], signed char dictionary[][WORD_MAX_SIZE], 
     }
 }
 
-void removeDuplicates(signed char dictionary[][WORD_MAX_SIZE], int_fast16_t n, int_fast16_t* uniqueCount)
+void removeDuplicates(char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE n, COUNTER_TYPE* uniqueCount)
 {
-    int_fast8_t isDuplicate;
+    COUNTER_TYPE isDuplicate;
 
-    for (int_fast16_t i = 0; i < n; i++)
+    for (COUNTER_TYPE i = 0; i < n; i++)
     {
         isDuplicate = 0;
         
-        for (int_fast16_t j = 0; j < *uniqueCount; j++)
+        for (COUNTER_TYPE j = 0; j < *uniqueCount; j++)
         {
             if (strcmp(dictionary[i], dictionary[j]) == 0)
             {
@@ -57,22 +58,22 @@ void removeDuplicates(signed char dictionary[][WORD_MAX_SIZE], int_fast16_t n, i
         }
     }
 
-    for (int_fast16_t i = *uniqueCount; i < WORD_MAX_COUNT; i++)
+    for (COUNTER_TYPE i = *uniqueCount; i < WORD_MAX_COUNT; i++)
     {
         dictionary[i][0] = '\0';
     }
 }
 
-void sortWords(signed char dictionary[][WORD_MAX_SIZE], int n) {
+void sortWords(char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE n) {
     // Ako je broj reči manji od 2, nema potrebe za sortiranjem
     if (n < 2) return;
 
-    for (int i = 0; i < n - 1; i++) {
-        for (int j = 0; j < n - i - 1; j++) {
+    for (COUNTER_TYPE i = 0; i < n - 1; i++) {
+        for (COUNTER_TYPE j = 0; j < n - i - 1; j++) {
             // Poredi dve reči
             if (strcmp(dictionary[j], dictionary[j + 1]) > 0) {
                 // Zameni reči
-                signed char temp[WORD_MAX_SIZE];
+                char temp[WORD_MAX_SIZE];
                 strcpy(temp, dictionary[j]);
                 strcpy(dictionary[j], dictionary[j + 1]);
                 strcpy(dictionary[j + 1], temp);
@@ -81,19 +82,19 @@ void sortWords(signed char dictionary[][WORD_MAX_SIZE], int n) {
     }
 }
 
-void makeDictionary(signed char text[], signed char dictionary[][WORD_MAX_SIZE])
+void makeDictionary(char text[], char dictionary[][WORD_MAX_SIZE])
 {
-    int_fast16_t n = 0;
-    int_fast16_t uniqueCount = 0;
+    COUNTER_TYPE n = 0;
+    COUNTER_TYPE uniqueCount = 0;
 
     separateWords(text, dictionary, &n);
     removeDuplicates(dictionary, n, &uniqueCount);
     sortWords(dictionary, uniqueCount);
 }
 
-void printDictionary(signed char dictionary[][WORD_MAX_SIZE])
+void printDictionary(char dictionary[][WORD_MAX_SIZE])
 {
-    int_fast16_t i = 0;
+    COUNTER_TYPE i = 0;
 
     printf("\n------------------\n");
     printf("--- DICTIONARY ---\n");
@@ -101,7 +102,7 @@ void printDictionary(signed char dictionary[][WORD_MAX_SIZE])
 
     while (dictionary[i][0] != '\0' && i < WORD_MAX_COUNT)
     {
-        printf("%ld.\t%s\n", i+1, dictionary[i]);
+        printf("%" COUNTER_SPECIFIER ".\t%s\n", i+1, dictionary[i]);
         i++;
     }
 

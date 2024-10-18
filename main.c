@@ -38,8 +38,8 @@ Mane zadatka
 
 int main()
 {
-    signed char text[TEXT_MAX_SIZE];
-    signed char dictionary[WORD_MAX_COUNT][WORD_MAX_SIZE];
+    char text[TEXT_MAX_SIZE];
+    char dictionary[WORD_MAX_COUNT][WORD_MAX_SIZE];
 
     printf("Enter text not longer than %d characters, including blank spaces: ", TEXT_MAX_SIZE - 1);
     fgets(text, TEXT_MAX_SIZE, stdin);
