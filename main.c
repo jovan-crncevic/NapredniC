@@ -28,6 +28,8 @@ ovaj pristup po cenu neiskoricene memorije.
 Izbegavanje koriscenja string.h
 Pretpostavke kojih se treba drzati tokom unosa teksta
 
+Prenosivost, preporuka pisati signed char
+
 Mane zadatka
 */
 
@@ -36,10 +38,10 @@ Mane zadatka
 
 int main()
 {
-    char text[TEXT_MAX_SIZE];
-    char dictionary[WORD_MAX_COUNT][WORD_MAX_SIZE];
+    signed char text[TEXT_MAX_SIZE];
+    signed char dictionary[WORD_MAX_COUNT][WORD_MAX_SIZE];
 
-    printf("Enter text not longer than %d characters, including blank spaces: ", TEXT_MAX_SIZE);
+    printf("Enter text not longer than %d characters, including blank spaces: ", TEXT_MAX_SIZE - 1);
     fgets(text, TEXT_MAX_SIZE, stdin);
 
     makeDictionary(text, dictionary);

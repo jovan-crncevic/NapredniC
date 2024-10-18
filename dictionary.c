@@ -4,7 +4,7 @@
 #include <string.h>
 #include "dictionary.h"
 
-void separateWords(char text[], char dictionary[][WORD_MAX_SIZE], int_fast16_t* n)
+void separateWords(signed char text[], signed char dictionary[][WORD_MAX_SIZE], int_fast16_t* n)
 {
     int_fast16_t i = 0;
     int_fast16_t m = 0;
@@ -33,7 +33,7 @@ void separateWords(char text[], char dictionary[][WORD_MAX_SIZE], int_fast16_t* 
     }
 }
 
-void removeDuplicates(char dictionary[][WORD_MAX_SIZE], int_fast16_t n, int_fast16_t* uniqueCount)
+void removeDuplicates(signed char dictionary[][WORD_MAX_SIZE], int_fast16_t n, int_fast16_t* uniqueCount)
 {
     int_fast8_t isDuplicate;
 
@@ -63,60 +63,7 @@ void removeDuplicates(char dictionary[][WORD_MAX_SIZE], int_fast16_t n, int_fast
     }
 }
 
-/*void sortWords(char dictionary[][WORD_MAX_SIZE], int n) {
-    // Kreiraj stog za čuvanje indeksa
-    int stack[n];
-    int top = -1;
-
-    // Pushuj početne indekse na stog
-    stack[++top] = 0;
-    stack[++top] = n - 1;
-
-    // Dok stog nije prazan
-    while (top >= 0) {
-        // Uzmi visoki i niski indeks
-        int high = stack[top--];
-        int low = stack[top--];
-
-        // Izaberi pivot
-        char pivot[WORD_MAX_SIZE];
-        strcpy(pivot, dictionary[high]);
-        int i = low - 1;
-
-        // Poredi i zameni ako je potrebno
-        for (int j = low; j < high; j++) {
-            if (strcmp(dictionary[j], pivot) < 0) {
-                i++;
-                // Zameni dictionary[i] i dictionary[j]
-                char temp[WORD_MAX_SIZE];
-                strcpy(temp, dictionary[i]);
-                strcpy(dictionary[i], dictionary[j]);
-                strcpy(dictionary[j], temp);
-            }
-        }
-
-        // Zameni pivot sa elementom na i+1
-        char temp[WORD_MAX_SIZE];
-        strcpy(temp, dictionary[i + 1]);
-        strcpy(dictionary[i + 1], dictionary[high]);
-        strcpy(dictionary[high], temp);
-        
-        // Pomeraj da bi se odredili novi indeksi
-        int pivotIndex = i + 1;
-
-        // Pushuj leve i desne indekse na stog
-        if (pivotIndex - 1 > low) {
-            stack[++top] = low;
-            stack[++top] = pivotIndex - 1;
-        }
-        if (pivotIndex + 1 < high) {
-            stack[++top] = pivotIndex + 1;
-            stack[++top] = high;
-        }
-    }
-}*/
-
-void sortWords(char dictionary[][WORD_MAX_SIZE], int n) {
+void sortWords(signed char dictionary[][WORD_MAX_SIZE], int n) {
     // Ako je broj reči manji od 2, nema potrebe za sortiranjem
     if (n < 2) return;
 
@@ -125,7 +72,7 @@ void sortWords(char dictionary[][WORD_MAX_SIZE], int n) {
             // Poredi dve reči
             if (strcmp(dictionary[j], dictionary[j + 1]) > 0) {
                 // Zameni reči
-                char temp[WORD_MAX_SIZE];
+                signed char temp[WORD_MAX_SIZE];
                 strcpy(temp, dictionary[j]);
                 strcpy(dictionary[j], dictionary[j + 1]);
                 strcpy(dictionary[j + 1], temp);
@@ -134,7 +81,7 @@ void sortWords(char dictionary[][WORD_MAX_SIZE], int n) {
     }
 }
 
-void makeDictionary(char text[], char dictionary[][WORD_MAX_SIZE])
+void makeDictionary(signed char text[], signed char dictionary[][WORD_MAX_SIZE])
 {
     int_fast16_t n = 0;
     int_fast16_t uniqueCount = 0;
@@ -144,7 +91,7 @@ void makeDictionary(char text[], char dictionary[][WORD_MAX_SIZE])
     sortWords(dictionary, uniqueCount);
 }
 
-void printDictionary(char dictionary[][WORD_MAX_SIZE])
+void printDictionary(signed char dictionary[][WORD_MAX_SIZE])
 {
     int_fast16_t i = 0;
 
