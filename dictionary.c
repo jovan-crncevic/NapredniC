@@ -3,6 +3,7 @@
 #include <inttypes.h>
 #include <ctype.h>
 #include <string.h>
+#include <assert.h>
 #include "dictionary.h"
 
 static void separateWords(const char text[], char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE* n);
@@ -13,6 +14,10 @@ static void generateOutputFile(const char dictionary[][WORD_MAX_SIZE]);
 
 static void separateWords(const char text[], char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE* n)
 {
+    assert(text != NULL);
+    assert(dictionary != NULL);
+    assert(n != NULL);
+
     COUNTER_TYPE i = 0;
     COUNTER_TYPE m = 0;
 
@@ -46,6 +51,10 @@ static void separateWords(const char text[], char dictionary[][WORD_MAX_SIZE], C
 
 static void removeDuplicates(char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE n, COUNTER_TYPE* uniqueCount)
 {
+    assert(dictionary != NULL);
+    assert(uniqueCount != NULL);
+    assert(n <= WORD_MAX_COUNT);
+
     COUNTER_TYPE isDuplicate;
 
     for (COUNTER_TYPE i = 0; i < n; i++)
@@ -76,6 +85,9 @@ static void removeDuplicates(char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE n, C
 
 static void swap(char a[], char b[])
 {
+    assert(a != NULL);
+    assert(b != NULL);
+    
     char temp[WORD_MAX_SIZE] = {'\0'};
 
     strcpy(temp, a);
@@ -85,6 +97,9 @@ static void swap(char a[], char b[])
 
 static void sortWords(char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE uniqueCount)
 {
+    assert(dictionary != NULL);
+    assert(uniqueCount <= WORD_MAX_COUNT);
+
     COUNTER_TYPE stack[uniqueCount];
     COUNTER_TYPE top = -1;
 
@@ -127,6 +142,8 @@ static void sortWords(char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE uniqueCount
 
 static void generateOutputFile(const char dictionary[][WORD_MAX_SIZE])
 {
+    assert(dictionary != NULL);
+
     FILE *file = fopen("dictionary.txt", "w");
 
     if (file == NULL)
@@ -159,6 +176,9 @@ static void generateOutputFile(const char dictionary[][WORD_MAX_SIZE])
 
 void makeDictionary(const char text[], char dictionary[][WORD_MAX_SIZE])
 {
+    assert(text != NULL);
+    assert(dictionary != NULL);
+
     COUNTER_TYPE n = 0;
     COUNTER_TYPE uniqueCount = 0;
 
@@ -173,6 +193,8 @@ void makeDictionary(const char text[], char dictionary[][WORD_MAX_SIZE])
 
 void printDictionary(const char dictionary[][WORD_MAX_SIZE])
 {
+    assert(dictionary != NULL);
+
     printf("\n------------------\n");
     printf("--- DICTIONARY ---\n");
     printf("------------------\n");

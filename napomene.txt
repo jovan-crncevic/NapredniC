@@ -1,4 +1,3 @@
 Napisati nacin prevodjenja i poziva programa
-Uraditi assertove
-Iskljuciti pragmom MISRA probleme
 Napisati koliko zauzimaju fajlovi
+Proveriti koding standard
