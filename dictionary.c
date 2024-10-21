@@ -5,26 +5,36 @@
 #include <string.h>
 #include "dictionary.h"
 
-void separateWords(char text[], char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE* n)
+static void separateWords(const char text[], char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE* n);
+static void removeDuplicates(char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE n, COUNTER_TYPE* uniqueCount);
+static void swap(char a[], char b[]);
+static void sortWords(char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE uniqueCount);
+static void generateOutputFile(const char dictionary[][WORD_MAX_SIZE]);
+
+static void separateWords(const char text[], char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE* n)
 {
     COUNTER_TYPE i = 0;
     COUNTER_TYPE m = 0;
 
-    while (text[i] != '\0' && *n < WORD_MAX_COUNT)
+    while ((text[i] != '\0') && (*n < WORD_MAX_COUNT))
     {
-        if (text[i] == ' ' && m > 0)
+        if ((text[i] == ' ') && (m > 0))
         {
             dictionary[*n][m] = '\0';
             (*n)++;
             m = 0;
+            i++;
         }
-        else if (isalpha(text[i]) && m < WORD_MAX_SIZE - 1)
+        else if ((isalpha(text[i])) && (m < WORD_MAX_SIZE - 1))
         {
             dictionary[*n][m] = tolower(text[i]);
             m++;
+            i++;
         }
-
-        i++;
+        else
+        {
+            i++;
+        }
     }
 
     if (m > 0)
@@ -34,7 +44,7 @@ void separateWords(char text[], char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE* 
     }
 }
 
-void removeDuplicates(char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE n, COUNTER_TYPE* uniqueCount)
+static void removeDuplicates(char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE n, COUNTER_TYPE* uniqueCount)
 {
     COUNTER_TYPE isDuplicate;
 
@@ -64,81 +74,58 @@ void removeDuplicates(char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE n, COUNTER_
     }
 }
 
-void sortWords(char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE n) {
-    if (n < 2) return;
+static void swap(char a[], char b[])
+{
+    char temp[WORD_MAX_SIZE] = {'\0'};
 
-    for (COUNTER_TYPE i = 0; i < n - 1; i++) {
-        for (COUNTER_TYPE j = 0; j < n - i - 1; j++) {
-            if (strcmp(dictionary[j], dictionary[j + 1]) > 0) {
-                char temp[WORD_MAX_SIZE];
-                strcpy(temp, dictionary[j]);
-                strcpy(dictionary[j], dictionary[j + 1]);
-                strcpy(dictionary[j + 1], temp);
+    strcpy(temp, a);
+    strcpy(a, b);
+    strcpy(b, temp);
+}
+
+static void sortWords(char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE uniqueCount)
+{
+    COUNTER_TYPE stack[uniqueCount];
+    COUNTER_TYPE top = -1;
+
+    stack[++top] = 0;
+    stack[++top] = uniqueCount - 1;
+
+    while (top >= 0)
+    {
+        COUNTER_TYPE right = stack[top--];
+        COUNTER_TYPE left = stack[top--];
+
+        char pivot[WORD_MAX_SIZE] = {'\0'};
+        strcpy(pivot, dictionary[right]);
+        COUNTER_TYPE i = left - 1;
+
+        for (COUNTER_TYPE j = left; j < right; j++)
+        {
+            if (strcmp(dictionary[j], pivot) <= 0)
+            {
+                i++;
+                swap(dictionary[i], dictionary[j]);
             }
+        }
+        swap(dictionary[i + 1], dictionary[right]);
+
+        COUNTER_TYPE pivotIndex = i + 1;
+
+        if ((pivotIndex - 1) > left)
+        {
+            stack[++top] = left;
+            stack[++top] = pivotIndex - 1;
+        }
+        if ((pivotIndex + 1) < right)
+        {
+            stack[++top] = pivotIndex + 1;
+            stack[++top] = right;
         }
     }
 }
 
-/*void merge(char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE left, COUNTER_TYPE mid, COUNTER_TYPE right) {
-    COUNTER_TYPE i, j, k;
-    COUNTER_TYPE n1 = mid - left + 1;
-    COUNTER_TYPE n2 = right - mid;
-
-    char leftArray[n1][WORD_MAX_SIZE], rightArray[n2][WORD_MAX_SIZE];
-
-    // Kopiraj podatke u leve i desne nizove
-    for (i = 0; i < n1; i++)
-        strcpy(leftArray[i], dictionary[left + i]);
-    for (j = 0; j < n2; j++)
-        strcpy(rightArray[j], dictionary[mid + 1 + j]);
-
-    i = 0; // Početak leve strane
-    j = 0; // Početak desne strane
-    k = left; // Početak spajanog niza
-
-    // Spajanje niza
-    while (i < n1 && j < n2) {
-        if (strcmp(leftArray[i], rightArray[j]) <= 0) {
-            strcpy(dictionary[k], leftArray[i]);
-            i++;
-        } else {
-            strcpy(dictionary[k], rightArray[j]);
-            j++;
-        }
-        k++;
-    }
-
-    // Kopiranje preostalih elemenata
-    while (i < n1) {
-        strcpy(dictionary[k], leftArray[i]);
-        i++;
-        k++;
-    }
-    while (j < n2) {
-        strcpy(dictionary[k], rightArray[j]);
-        j++;
-        k++;
-    }
-}
-
-void sortWords(char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE n) {
-    COUNTER_TYPE curr_size;
-    COUNTER_TYPE left_start;
-
-    // Spajanje podnizova u rastućem redosledu
-    for (curr_size = 1; curr_size <= n - 1; curr_size = 2 * curr_size) {
-        for (left_start = 0; left_start < n - 1; left_start += 2 * curr_size) {
-            COUNTER_TYPE mid = left_start + curr_size - 1;
-            COUNTER_TYPE right_end = (left_start + 2 * curr_size - 1 < n - 1) ? (left_start + 2 * curr_size - 1) : (n - 1);
-
-            if (mid < right_end) {
-                merge(dictionary, left_start, mid, right_end);
-            }
-        }
-    }
-}*/
-
-void generateOutputFile(char dictionary[][WORD_MAX_SIZE])
+static void generateOutputFile(const char dictionary[][WORD_MAX_SIZE])
 {
     FILE *file = fopen("dictionary.txt", "w");
 
@@ -160,7 +147,7 @@ void generateOutputFile(char dictionary[][WORD_MAX_SIZE])
     {
         COUNTER_TYPE i = 0;
 
-        while (dictionary[i][0] != '\0' && i < WORD_MAX_COUNT)
+        while ((dictionary[i][0] != '\0') && (i < WORD_MAX_COUNT))
         {
             fprintf(file, "%" COUNTER_SPECIFIER ".\t%s\n", i+1, dictionary[i]);
             i++;
@@ -170,7 +157,7 @@ void generateOutputFile(char dictionary[][WORD_MAX_SIZE])
     fclose(file);
 }
 
-void makeDictionary(char text[], char dictionary[][WORD_MAX_SIZE])
+void makeDictionary(const char text[], char dictionary[][WORD_MAX_SIZE])
 {
     COUNTER_TYPE n = 0;
     COUNTER_TYPE uniqueCount = 0;
@@ -184,7 +171,7 @@ void makeDictionary(char text[], char dictionary[][WORD_MAX_SIZE])
     }
 }
 
-void printDictionary(char dictionary[][WORD_MAX_SIZE])
+void printDictionary(const char dictionary[][WORD_MAX_SIZE])
 {
     printf("\n------------------\n");
     printf("--- DICTIONARY ---\n");
@@ -198,7 +185,7 @@ void printDictionary(char dictionary[][WORD_MAX_SIZE])
     {
         COUNTER_TYPE i = 0;
 
-        while (dictionary[i][0] != '\0' && i < WORD_MAX_COUNT)
+        while ((dictionary[i][0] != '\0') && (i < WORD_MAX_COUNT))
         {
             printf("%" COUNTER_SPECIFIER ".\t%s\n", i+1, dictionary[i]);
             i++;

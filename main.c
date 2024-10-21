@@ -14,7 +14,7 @@
 
 > Opis resenja:
     - Resenje zadatka je implementirano u okviru dictionary.c fajla kojem odgovara
-      dictionary.h header. Funkcije koje bi korisnik trebalo da koristi su
+      dictionary.h header. Funkcije koje korisnik moze da koristi su
       makeDictionary() i printDictionary(). Funkcije koje se pozivaju tokom pravljenja
       recnika su odvajanje reci, brisanje duplikata, sortiranje preostalih reci i,
       ukoliko je GENERATE_OUTPUT_FILE flag postavljen na 1, generisanje dictionary.txt
@@ -27,47 +27,97 @@
     - Kroz ceo zadatak cu teziti tome da program radi sto brze, u nekim slucajevima
       i po cenu koriscenja dodatne memorije. Kada su kratki tekstovi u pitanju razlika
       u vremenu nije toliko primetna, ali kada na ulaz programa stigne dugacak tekst,
-      stvari se menjaju. Najvise paznje sam obratio na algoritam za sortiranje i
-      izabrao sam merge sort jer mu je vremenska kompleksnost u svim slucajevima ista
-      (nlogn).
+      stvari se menjaju.
+    - Mnogo paznje sam posvetio algoritmu za sortiranje i izabrao sam quick sort jer
+      je dobra kombinacija koriscenja memorije i vremena. Vremenska slozenost ce mu
+      uglavnom biti O(n*logn), a najgori slucaj O(n^2) je u situaciji kada mu na ulaz
+      stigne vec sortiran niz, sto ce se u praksi sa tekstovima veoma retko desavati.
     - Takodje, odlucio sam se za staticku alokaciju memorije. Na osnovu razlicitih
       izvora zakljucio sam da je brza i efikasnija, ali i bezbednija, sto je posebno
       bitno za embedded sisteme i rad u realnom vremenu, jer npr. svako nepredvidjeno
       curenje memorije moze izazvati problem.
     - Sto se hardverskog ogranicenja tice, to sam resio koriscenjem pretprocesorskih
       direktiva. Detaljnije o tome u delu za prenosivost.
-    - main.c:
-    - dictionary.c:
 
-main.c:
-Ne vrsi se provera broja unetih karaktera, korisniku je eksplicitno navedeno, ukoliko se pravilo ne ispostuje funkcija fgets ce
-odseci visak karakera i proslediti odsecen tekst. Izabrao sam ovo kako bismo ustedeli resurse za proveru necega sto nece crashovati program.
-
-dictionary.c:
-Bolji pristup bi bio provera duplikat reci u samom tekstu pre nego sto se prodje kroz separate, ali je vremenski zahtevna i odlucio sam se za
-ovaj pristup po cenu neiskoricene memorije.
+> Dodatna usteda vremena:
+    - fgets() funkcija ce odseci deo teksta koji prelazi velicinu od TEXT_MAX_SIZE,
+      tako da ne moramo da gubimo vreme na proveru duzine.
+    - Tokom programa smanjujem maksimalnu vrednost do koje brojac moze da ide. Iako
+      je WORD_MAX_COUNT postavljen na odredjenu cifru, nakon odvajanja reci broj
+      koji se prosledjuje brisanju duplikata je broj reci koje se zapravo nalaze u
+      tekstu, a onda se sortiranju reci prosledjuje broj preostalih reci nakon
+      brisanja duplikata.
 
 > Prenosivost:
     - Koriscene su samo standardne C biblioteke (po C17 standardu).
     - Lako moze da se ogranicava memorija menjanjem pretprocesorskih direktiva,
       u zavisnosti od nasih potreba i ogranicenja.
-    - Lako moze da se menja tip promenljive i format specifikator za ispis menjanjem
-      pretprocesorskih direktiva, jer npr. ako se tekst ogranici na 200 karaktera,
-      nema potrebe za int16.
+    - Lako moze da se menja tip promenljive brojaca i format specifikator za ispis
+      menjanjem pretprocesorskih direktiva.
     - Razlicita okruzenja na char gledaju drugacije, neki kao signed, neki kao unsigned.
       U kontekstu ovog zadatka i prenosivosti nije bitno, jer baratamo karakterima iz
       ASCII tabele, a oni u oba slucaja upadaju u raspolozivi opseg char tipa.
 
-> Pretpostavke kojih se treba drzati tokom unosa teksta:
-Tekst nece imati bespotrebna prazna mesta na pocetku i na kraju. Ne postoji funkcija koja
+> Pretprocesorske direktive:
+    - TEXT_MAX_SIZE - maksimalna duzina teksta koja moze doci na ulaz
+    - WORD_MAX_SIZE - maksimalna duzina reci koja se smesta u recnik
+    - WORD_MAX_COUNT - maksimalan broj reci u recniku
+    - COUNTER_TYPE - tip brojaca kroz program (za najbolju efikasnost potrebno je da
+                     podrzava vrednosti najveceg broja izmedju 3 prethodne
+                     pretprocesorske direktive i ne vise od toga, npr. ako je najveca
+                     vrednost TEXT_MAX_SIZE 30000, nema potrebe za int32, dovoljan je
+                     int16; int_fast16_t zbog brzine)
+    - COUNTER_SPECIFIER - trebalo bi da se poklapa sa COUNTER_TYPE i da bude namenjen
+                          printf() funkciji (npr. za int_fast16_t se koristi PRIdFAST16)
+    - GENERATE_OUTPUT_FILE - postavlja se na 1 ako zelimo da generisemo dictionary.txt
+                             fajl, odnosno na 0 ako ne zelimo
 
 > Testiranje:
-    - Program je provucen kroz style50 da se potvrdi pravilan koding standard.
+    - Testiranje sam poceo tako sto sam na ulaz prosledjivao razne tekstove razlicitih
+      duzina, kombinacija karaktera, sortiranja, duplikata. Na osnovu izlaza, najvise
+      izmena sam pravio u separateWords() funkciji, dok nisam dobio zeljene rezultate.
+    - U prvoj verziji, program je imao samo unos teksta iz terminala, ali sam primetio
+      da fgets() ogranicava ulaz na maksimalno 4096 karaktera, bez obzira na to da li je
+      TEXT_MAX_SIZE postavljen na vise od toga, tako da sam zbog duzih tekstova uveo
+      i citanje iz fajla.
+    - Dobar deo vremena sam potrosio na izbor algoritma za sortiranje reci, pogotovo
+      izbor izmedju merge i quick sort. Merge je dobar jer mu je vremenska slozenost
+      uvek fiksna i iznosti O(n*logn), ali koristi vise memorije od quick sort- a,
+      a kako sam vec naveo, najgori slucaj quick sort- a ce se veoma retko desavati
+      tako da sam izabrao njega i pored brzine ustedeo i na memoriji.
+    - Program je provucen kroz style50 da se potvrdi vecina stavki iz koding standarda.
     - Program je testiran na MISRA pravila.
 
-> MISRA pravila 
+> Neispostovana MISRA pravila:
+    - (MISRA-C:2004 5.6/A) No identifier in one name space should have the same spelling
+      as an identifier in another name space, with the exception of structure member and
+      union member names.
+    - (MISRA-C:2004 5.7/A) No identifier name should be reused.
+    - (MISRA-C:2004 6.1/R) The plain char type shall be used only for the storage and use
+      of character values.
+    - (MISRA-C:2004 10.1/R) The value of an expression of integer type shall not be
+      implicitly converted to a different underlying type if it is not a conversion to a
+      wider integer type of the same signedness.
+    - (MISRA-C:2004 12.13/A) The increment (++) and decrement (--) operators should not
+      be mixed with other operators in an expression.
+    - (MISRA-C:2004 12.2/R) The value of an expression shall be the same under any order
+      of evaluation that the standard permits.
+    - (MISRA-C:2004 13.5/R) The three expressions of a for statement shall be concerned
+      only with loop control.
+    - (MISRA-C:2004 14.7/R) A function shall have a single point of exit at the end of
+      the function.
+    - (MISRA-C:2004 17.4/R) Array indexing shall be the only allowed form of
+      pointer arithmetic.
+    - (MISRA-C:2004 20.9/R) The input/output library <stdio.h> shall not be used in
+      production code.
 
 > Mane resenja:
+    - Ako ogranicimo tekst na 10000 karaktera medju kojima je 1000 reci i ogranicimo
+      broj reci u recniku na 1000, nikad necemo iskoristiti pun potencijal zauzete
+      memorije jer je staticki alocirana, a na brisanje duplikata mozemo izgubiti
+      znacajan procenat reci koje ce se upisati u recnik (resenje bi bilo da se
+      duplikati brisu iz teksta pre nego sto se reci odvoje)
+    - Neispostovana MISRA pravila
 */
 
 #include <stdio.h>
@@ -79,7 +129,7 @@ int main(int argc, char* argv[])
     if (!((argc == 2 && atoi(argv[1]) == 1) || (argc == 3 && atoi(argv[1]) == 2)))
     {
         printf("Wrong format. Call the program using:\n%s 1, if you want to type the text, or\n"
-               "%s 2 INPUT_FILE_NAME, if you want to use text from existing file\n", argv[0], argv[0]);
+               "%s 2 INPUT_FILE_NAME, if you want to use the text from existing file\n", argv[0], argv[0]);
         return 1;
     }
 
