@@ -153,7 +153,7 @@ static void generateOutputFile(const char dictionary[][WORD_MAX_SIZE])
 {
     assert(dictionary != NULL);
 
-    FILE *file = fopen("output/dictionary.txt", "w");
+    FILE *file = fopen("dictionary.txt", "w");
 
     if (file == NULL)
     {
