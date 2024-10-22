@@ -1,9 +1,10 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <inttypes.h>
-#include <ctype.h>
-#include <string.h>
 #include <assert.h>
+#include <ctype.h>
+#include <inttypes.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
 #include "dictionary.h"
 
 static void separateWords(const char text[], char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE* n);
@@ -103,13 +104,17 @@ static void sortWords(char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE uniqueCount
     COUNTER_TYPE stack[uniqueCount];
     COUNTER_TYPE top = -1;
 
-    stack[++top] = 0;
-    stack[++top] = uniqueCount - 1;
+    top++;
+    stack[top] = 0;
+    top++;
+    stack[top] = uniqueCount - 1;
 
     while (top >= 0)
     {
-        COUNTER_TYPE right = stack[top--];
-        COUNTER_TYPE left = stack[top--];
+        COUNTER_TYPE right = stack[top];
+        top--;
+        COUNTER_TYPE left = stack[top];
+        top--;
 
         char pivot[WORD_MAX_SIZE] = {'\0'};
         strcpy(pivot, dictionary[right]);
@@ -129,13 +134,17 @@ static void sortWords(char dictionary[][WORD_MAX_SIZE], COUNTER_TYPE uniqueCount
 
         if ((pivotIndex - 1) > left)
         {
-            stack[++top] = left;
-            stack[++top] = pivotIndex - 1;
+            top++;
+            stack[top] = left;
+            top++;
+            stack[top] = pivotIndex - 1;
         }
         if ((pivotIndex + 1) < right)
         {
-            stack[++top] = pivotIndex + 1;
-            stack[++top] = right;
+            top++;
+            stack[top] = pivotIndex + 1;
+            top++;
+            stack[top] = right;
         }
     }
 }
@@ -166,7 +175,7 @@ static void generateOutputFile(const char dictionary[][WORD_MAX_SIZE])
 
         while ((dictionary[i][0] != '\0') && (i < WORD_MAX_COUNT))
         {
-            fprintf(file, "%" COUNTER_SPECIFIER ".\t%s\n", i+1, dictionary[i]);
+            fprintf(file, "%" COUNTER_SPECIFIER ".\t%s\n", i + 1, dictionary[i]);
             i++;
         }
     }
@@ -209,7 +218,7 @@ void printDictionary(const char dictionary[][WORD_MAX_SIZE])
 
         while ((dictionary[i][0] != '\0') && (i < WORD_MAX_COUNT))
         {
-            printf("%" COUNTER_SPECIFIER ".\t%s\n", i+1, dictionary[i]);
+            printf("%" COUNTER_SPECIFIER ".\t%s\n", i + 1, dictionary[i]);
             i++;
         }
     }

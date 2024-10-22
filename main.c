@@ -59,18 +59,18 @@
       ASCII tabele, a oni u oba slucaja upadaju u raspolozivi opseg char tipa.
 
 > Pretprocesorske direktive:
-    - TEXT_MAX_SIZE - maksimalna duzina teksta koja moze doci na ulaz
-    - WORD_MAX_SIZE - maksimalna duzina reci koja se smesta u recnik
-    - WORD_MAX_COUNT - maksimalan broj reci u recniku
+    - TEXT_MAX_SIZE - maksimalna duzina teksta koja moze doci na ulaz.
+    - WORD_MAX_SIZE - maksimalna duzina reci koja se smesta u recnik.
+    - WORD_MAX_COUNT - maksimalan broj reci u recniku.
     - COUNTER_TYPE - tip brojaca kroz program (za najbolju efikasnost potrebno je da
                      podrzava vrednosti najveceg broja izmedju 3 prethodne
                      pretprocesorske direktive i ne vise od toga, npr. ako je najveca
                      vrednost TEXT_MAX_SIZE 30000, nema potrebe za int32, dovoljan je
-                     int16; int_fast16_t zbog brzine)
+                     int16; int_fast16_t zbog brzine).
     - COUNTER_SPECIFIER - trebalo bi da se poklapa sa COUNTER_TYPE i da bude namenjen
-                          printf() funkciji (npr. za int_fast16_t se koristi PRIdFAST16)
+                          printf() funkciji (npr. za int_fast16_t se koristi PRIdFAST16).
     - GENERATE_OUTPUT_FILE - postavlja se na 1 ako zelimo da generisemo dictionary.txt
-                             fajl, odnosno na 0 ako ne zelimo
+                             fajl, odnosno na 0 ako ne zelimo.
 
 > Testiranje:
     - Testiranje sam poceo tako sto sam na ulaz prosledjivao razne tekstove razlicitih
@@ -85,8 +85,28 @@
       uvek fiksna i iznosti O(n*logn), ali koristi vise memorije od quick sort- a,
       a kako sam vec naveo, najgori slucaj quick sort- a ce se veoma retko desavati
       tako da sam izabrao njega i pored brzine ustedeo i na memoriji.
+    - Program je na ulaze koji pocinju praznim redom bacao segmentation fault, pa sam
+      napravio zastitu i za to.
     - Program je provucen kroz style50 da se potvrdi vecina stavki iz koding standarda.
     - Program je testiran na MISRA pravila.
+
+> Rezultati testiranja:
+    - Da bih potvrdio teoriju o sortiranju, koristio sam funkciju clock() kako bih
+      dobio vreme izvrsavanja programa kada se koriste 3 razlicita tipa sortiranja:
+
+      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+      * FAJL          * QUICK SORT    * MERGE SORT    * BUBBLE SORT   *
+      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+      * test_1.txt    * 0.126572s     * 0.126596s     * 0.649766s     *
+      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+      * test_2.txt    * 0.021502s     * 0.021579s     * 0.024576s     *
+      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+      * test_3.txt    * 2.289610s     * 2.299813s     * 4.380709s     *
+      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+    - Iz ovoga jasno vidimo da su i merge i quick sort daleko efikasniji od bubble
+      sort- a, pogotovo za duze tekstove. Vremena quick i merge sort- a jedva da se
+      razlikuju, a posto quick koristi manje memorije, ostaje prvi izbor.
 
 > Neispostovana MISRA pravila:
     - (MISRA-C:2004 5.6/A) No identifier in one name space should have the same spelling
@@ -98,8 +118,6 @@
     - (MISRA-C:2004 10.1/R) The value of an expression of integer type shall not be
       implicitly converted to a different underlying type if it is not a conversion to a
       wider integer type of the same signedness.
-    - (MISRA-C:2004 12.13/A) The increment (++) and decrement (--) operators should not
-      be mixed with other operators in an expression.
     - (MISRA-C:2004 12.2/R) The value of an expression shall be the same under any order
       of evaluation that the standard permits.
     - (MISRA-C:2004 13.5/R) The three expressions of a for statement shall be concerned
@@ -116,17 +134,18 @@
       broj reci u recniku na 1000, nikad necemo iskoristiti pun potencijal zauzete
       memorije jer je staticki alocirana, a na brisanje duplikata mozemo izgubiti
       znacajan procenat reci koje ce se upisati u recnik (resenje bi bilo da se
-      duplikati brisu iz teksta pre nego sto se reci odvoje)
-    - Neispostovana MISRA pravila
+      duplikati brisu iz teksta pre nego sto se reci odvoje).
+    - Neispostovana MISRA pravila.
 */
 
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "dictionary.h"
 
 int main(int argc, char* argv[])
 {
-    if (!((argc == 2 && atoi(argv[1]) == 1) || (argc == 3 && atoi(argv[1]) == 2)))
+    if (!(((argc == 2) && (atoi(argv[1]) == 1)) || ((argc == 3) && (atoi(argv[1]) == 2))))
     {
         printf("Wrong format. Call the program using:\n%s 1, if you want to type the text, or\n"
                "%s 2 INPUT_FILE_NAME, if you want to use the text from existing file\n", argv[0], argv[0]);
@@ -158,6 +177,12 @@ int main(int argc, char* argv[])
         }
 
         fclose(file);
+    }
+
+    if (text[0] == '\n')
+    {
+      printf("Do not start the text with a blank line\n");
+      return 4;
     }
 
     makeDictionary(text, dictionary);
