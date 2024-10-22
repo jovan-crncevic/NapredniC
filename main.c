@@ -27,7 +27,7 @@
     - Kroz ceo zadatak cu teziti tome da program radi sto brze, u nekim slucajevima
       i po cenu koriscenja dodatne memorije. Kada su kratki tekstovi u pitanju razlika
       u vremenu nije toliko primetna, ali kada na ulaz programa stigne dugacak tekst,
-      stvari se menjaju.
+      stvari se menjaju (detaljnije o tome u rezultatima testiranja).
     - Mnogo paznje sam posvetio algoritmu za sortiranje i izabrao sam quick sort jer
       je dobra kombinacija koriscenja memorije i vremena. Vremenska slozenost ce mu
       uglavnom biti O(n*logn), a najgori slucaj O(n^2) je u situaciji kada mu na ulaz
@@ -37,9 +37,9 @@
       bitno za embedded sisteme i rad u realnom vremenu, jer npr. svako nepredvidjeno
       curenje memorije moze izazvati problem.
     - Sto se hardverskog ogranicenja tice, to sam resio koriscenjem pretprocesorskih
-      direktiva. Detaljnije o tome u delu za prenosivost.
+      direktiva (detaljnije o tome u delu za prenosivost).
 
-> Dodatna usteda vremena:
+> Dodatna usteda resursa:
     - fgets() funkcija ce odseci deo teksta koji prelazi velicinu od TEXT_MAX_SIZE,
       tako da ne moramo da gubimo vreme na proveru duzine.
     - Tokom programa smanjujem maksimalnu vrednost do koje brojac moze da ide. Iako
@@ -47,6 +47,8 @@
       koji se prosledjuje brisanju duplikata je broj reci koje se zapravo nalaze u
       tekstu, a onda se sortiranju reci prosledjuje broj preostalih reci nakon
       brisanja duplikata.
+    - Redosled linija (npr. u main- u ne vrsim alokaciju memorije i pozive funkcija
+      dok ne prodju sve provere validnosti poziva i ulaznog teksta).
 
 > Prenosivost:
     - Koriscene su samo standardne C biblioteke (po C17 standardu).
@@ -60,8 +62,8 @@
 
 > Pretprocesorske direktive:
     - TEXT_MAX_SIZE - maksimalna duzina teksta koja moze doci na ulaz.
-    - WORD_MAX_SIZE - maksimalna duzina reci koja se smesta u recnik.
-    - WORD_MAX_COUNT - maksimalan broj reci u recniku.
+    - WORD_MAX_SIZE - maksimalna duzina reci u tekstu.
+    - WORD_MAX_COUNT - maksimalan broj reci u tekstu.
     - COUNTER_TYPE - tip brojaca kroz program (za najbolju efikasnost potrebno je da
                      podrzava vrednosti najveceg broja izmedju 3 prethodne
                      pretprocesorske direktive i ne vise od toga, npr. ako je najveca
@@ -84,7 +86,7 @@
       izbor izmedju merge i quick sort. Merge je dobar jer mu je vremenska slozenost
       uvek fiksna i iznosti O(n*logn), ali koristi vise memorije od quick sort- a,
       a kako sam vec naveo, najgori slucaj quick sort- a ce se veoma retko desavati
-      tako da sam izabrao njega i pored brzine ustedeo i na memoriji.
+      tako da sam izabrao njega i pored vremena ustedeo i na memoriji.
     - Program je na ulaze koji pocinju praznim redom bacao segmentation fault, pa sam
       napravio zastitu i za to.
     - Program je provucen kroz style50 da se potvrdi vecina stavki iz koding standarda.
@@ -136,8 +138,25 @@
       znacajan procenat reci koje ce se upisati u recnik (resenje bi bilo da se
       duplikati brisu iz teksta pre nego sto se reci odvoje).
     - Neispostovana MISRA pravila.
+
+> Proces kompajliranja i pozivanja:
+    - U zadatku je potrebno realizovati modul kao dinamicku biblioteku sa dinamickim
+      povezivanjem tokom izvrsavanja.
+    - Koraci tokom kompajliranja su:
+        1) gcc -c -fpic dictionary.c (objektna datoteka).
+        2) gcc -shared -o libdictionary.so dictionary.o (dinamicka biblioteka).
+        3) gcc main.c (izvrsna datoteka; putanje ne navodim jer su u istom folderu;
+           da nisu, dodajemo flagove -I, -L, -l).
+    - Pozivanje programa se vrsi:
+        1) export LD_LIBRARY_PATH=:/putanja/do/biblioteke (promenljiva okruzenja).
+        2.1) ./a.out 1 (za unos teksta kroz terminal).
+        2.2) ./a.out 2 naziv_ulaznog_fajla.txt (za citanje teksta iz fajla).
+
+> Velicina izvrsne datoteke:
+    - Koriscenjem ls -sh a.out dobio sam vrednost od 20 KB.
 */
 
+#include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -153,7 +172,6 @@ int main(int argc, char* argv[])
     }
 
     char text[TEXT_MAX_SIZE] = {'\0'};
-    char dictionary[WORD_MAX_COUNT][WORD_MAX_SIZE] = {'\0'};
 
     if (atoi(argv[1]) == 1)
     {
@@ -185,8 +203,38 @@ int main(int argc, char* argv[])
       return 4;
     }
 
-    makeDictionary(text, dictionary);
-    printDictionary(dictionary);
+    char dictionary[WORD_MAX_COUNT][WORD_MAX_SIZE] = {'\0'};
+
+    void* handle;
+    void (*makeDict)(const char[], char[][WORD_MAX_SIZE]);
+    void (*printDict)(const char[][WORD_MAX_SIZE]);
+    char* error;
+
+    handle = dlopen("libdictionary.so", RTLD_LAZY);
+    if (handle == NULL)
+    {
+      fputs(dlerror(), stderr);
+      exit(1);
+    }
+
+    makeDict = dlsym(handle, "makeDictionary");
+    if ((error = dlerror()) != NULL)
+    {
+      fputs(error, stderr);
+      exit(1);
+    }
+
+    printDict = dlsym(handle, "printDictionary");
+    if ((error = dlerror()) != NULL)
+    {
+      fputs(error, stderr);
+      exit(1);
+    }
+
+    (*makeDict)(text, dictionary);
+    (*printDict)(dictionary);
+
+    dlclose(handle);
 
     return 0;
 }
