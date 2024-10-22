@@ -1,3 +1,0 @@
-Napisati nacin prevodjenja i poziva programa
-Napisati koliko zauzimaju fajlovi
-Proveriti koding standard
