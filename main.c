@@ -142,13 +142,12 @@
 > Proces kompajliranja i pozivanja:
     - U zadatku je potrebno realizovati modul kao dinamicku biblioteku sa dinamickim
       povezivanjem tokom izvrsavanja.
-    - Koraci tokom kompajliranja su:
+    - Koraci tokom kompajliranja su (dictionary folder):
         1) gcc -c -fpic dictionary.c (objektna datoteka).
         2) gcc -shared -o libdictionary.so dictionary.o (dinamicka biblioteka).
-        3) gcc main.c (izvrsna datoteka; putanje ne navodim jer su u istom folderu;
-           da nisu, dodajemo flagove -I, -L, -l).
-    - Pozivanje programa se vrsi:
-        1) export LD_LIBRARY_PATH=:/putanja/do/biblioteke (promenljiva okruzenja).
+        3) gcc main.c -I dictionary/ -L dictionary/ -l dictionary.
+    - Koraci tokom pokretanja programa (glavni folder):
+        1) export LD_LIBRARY_PATH=:dictionary/ (promenljiva okruzenja).
         2.1) ./a.out 1 (za unos teksta kroz terminal).
         2.2) ./a.out 2 naziv_ulaznog_fajla.txt (za citanje teksta iz fajla).
 
